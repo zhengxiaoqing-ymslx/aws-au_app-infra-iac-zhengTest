@@ -18,15 +18,15 @@
 # AWS VPC関連の基本情報（VPC ID、Subnet ID等）
 #
 aws_region_name           = "ap-northeast-1"
-aws_vpc_id                = "vpc-0fc56c69d8cca3803"
-aws_vpc_cidr              = "10.0.0.0/16"
+aws_vpc_id                = "vpc-0464709b4e7cea225"
+aws_vpc_cidr              = "192.168.0.0/16"
 aws_vpc_s3_endpoint       = "vpce-00771936dee0bb65d"
-aws_subnet_public-a_id    = "subnet-0cb7576f339a2e0c8"
-aws_subnet_public-c_id    = "subnet-08ffef56f7c9aa937"
-aws_subnet_protected-a_id = "subnet-000cfd6f239ee1909"
-aws_subnet_protected-c_id = "subnet-0a5aba6ec5b0928c5"
-aws_subnet_private-a_id   = "subnet-0b074b02323e045ea"
-aws_subnet_private-c_id   = "subnet-0c2b650e6571ad02a"
+aws_subnet_public-a_id    = "subnet-05da79948f4543e55"
+aws_subnet_public-c_id    = "subnet-00d241812671a7e4a"
+aws_subnet_protected-a_id = "subnet-0076bbde9df5906fe"
+aws_subnet_protected-c_id = "subnet-05a034287d4733439"
+aws_subnet_private-a_id   = "subnet-0deb9b8a543410034"
+aws_subnet_private-c_id   = "subnet-02e87f45d9a38f3fd"
 
 #
 # システム名称
