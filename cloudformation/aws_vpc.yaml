@@ -1,0 +1,338 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: YNAG3Sample01
+
+Parameters:
+  VpcCIDR:
+    Type: String
+    Default: 10.0.0.0/16
+  SubnetPubACIDR:
+    Type: String
+    Default: 10.0.0.0/24
+  SubnetPubCCIDR:
+    Type: String
+    Default: 10.0.1.0/24
+  SubnetProACIDR:
+    Type: String
+    Default: 10.0.10.0/24
+  SubnetProCCIDR:
+    Type: String
+    Default: 10.0.11.0/24
+  SubnetPriACIDR:
+    Type: String
+    Default: 10.0.20.0/24
+  SubnetPriCCIDR:
+    Type: String
+    Default: 10.0.21.0/24
+
+Resources:
+  VpcYNAG3Sample01:
+    Type: 'AWS::EC2::VPC'
+    DeletionPolicy: Delete
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+      Tags:
+        - Key: Name
+          Value: vpc-YNAG3Sample01
+  FlowLogsRole:
+    Type: 'AWS::IAM::Role'
+    DeletionPolicy: Delete
+    Properties:
+      RoleName: fl-vpc-YNAG3Sample01
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - vpc-flow-logs.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+  FlowLogsPolicy:
+    Type: 'AWS::IAM::Policy'
+    DeletionPolicy: Delete
+    Properties:
+      PolicyName: FlowLogsPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+              - 'logs:DescribeLogGroups'
+              - 'logs:DescribeLogStreams'
+            Effect: Allow
+            Resource: '*'
+      Roles:
+        - !Ref FlowLogsRole
+  VPCFlowLog:
+    Type: 'AWS::EC2::FlowLog'
+    DeletionPolicy: Delete
+    Properties:
+      DeliverLogsPermissionArn: !GetAtt 
+        - FlowLogsRole
+        - Arn
+      LogGroupName: vpc-YNAG3Sample01
+      ResourceId: !Ref VpcYNAG3Sample01
+      ResourceType: VPC
+      Tags:
+        - Key: Name
+          Value: vpc-YNAG3Sample01
+      TrafficType: ALL
+  CloudWatchLogGroup0:
+    Type: 'AWS::Logs::LogGroup'
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName: vpc-YNAG3Sample01
+      RetentionInDays: '7'
+      Tags:
+        - Key: Name
+          Value: vpc-YNAG3Sample01
+        - Key: Application
+          Value: YNAG3Sample01
+  SubnetYNAG3Sample01PublicA:
+    Type: 'AWS::EC2::Subnet'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      AvailabilityZone: ap-northeast-1a
+      CidrBlock: !Ref SubnetPubACIDR
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+        - Key: Name
+          Value: subnet-YNAG3Sample01-public-a
+  SubnetYNAG3Sample01PublicC:
+    Type: 'AWS::EC2::Subnet'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      AvailabilityZone: ap-northeast-1c
+      CidrBlock: !Ref SubnetPubCCIDR
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+        - Key: Name
+          Value: subnet-YNAG3Sample01-public-c
+  SubnetYNAG3Sample01ProtectedA:
+    Type: 'AWS::EC2::Subnet'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      AvailabilityZone: ap-northeast-1a
+      CidrBlock: !Ref SubnetProACIDR
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+        - Key: Name
+          Value: subnet-YNAG3Sample01-protected-a
+  SubnetYNAG3Sample01ProtectedC:
+    Type: 'AWS::EC2::Subnet'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      AvailabilityZone: ap-northeast-1c
+      CidrBlock: !Ref SubnetProCCIDR
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+        - Key: Name
+          Value: subnet-YNAG3Sample01-protected-c
+  SubnetYNAG3Sample01PrivateA:
+    Type: 'AWS::EC2::Subnet'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      AvailabilityZone: ap-northeast-1a
+      CidrBlock: !Ref SubnetPriACIDR
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+        - Key: Name
+          Value: subnet-YNAG3Sample01-private-a
+  SubnetYNAG3Sample01PrivateC:
+    Type: 'AWS::EC2::Subnet'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      AvailabilityZone: ap-northeast-1c
+      CidrBlock: !Ref SubnetPriCCIDR
+      MapPublicIpOnLaunch: 'false'
+      Tags:
+        - Key: Name
+          Value: subnet-YNAG3Sample01-private-c
+  DbsubnetYNAG3Sample01:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    DeletionPolicy: Delete
+    Properties:
+      DBSubnetGroupDescription: 'for subnet-YNAG3Sample01-private-a, subnet-YNAG3Sample01-private-c'
+      DBSubnetGroupName: dbsubnet-YNAG3Sample01
+      SubnetIds:
+        - !Ref SubnetYNAG3Sample01PrivateA
+        - !Ref SubnetYNAG3Sample01PrivateC
+      Tags:
+        - Key: Name
+          Value: dbsubnet-YNAG3Sample01
+  IgwYNAG3Sample01:
+    Type: 'AWS::EC2::InternetGateway'
+    DeletionPolicy: Delete
+    Properties:
+      Tags:
+        - Key: Name
+          Value: igw-YNAG3Sample01
+  IgwYNAG3Sample01Attach:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      InternetGatewayId: !Ref IgwYNAG3Sample01
+  NgwYNAG3Sample01A:
+    Type: 'AWS::EC2::NatGateway'
+    DeletionPolicy: Delete
+    Properties:
+      AllocationId: !GetAtt 
+        - EipNgwYNAG3Sample01A
+        - AllocationId
+      SubnetId: !Ref SubnetYNAG3Sample01PublicA
+      Tags:
+        - Key: Name
+          Value: ngw-YNAG3Sample01-a
+        - Key: Application
+          Value: YNAG3Sample01
+  EipNgwYNAG3Sample01A:
+    Type: 'AWS::EC2::EIP'
+    DeletionPolicy: Delete
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: eip-ngw-YNAG3Sample01-a
+        - Key: Application
+          Value: YNAG3Sample01
+  NgwYNAG3Sample01C:
+    Type: 'AWS::EC2::NatGateway'
+    DeletionPolicy: Delete
+    Properties:
+      AllocationId: !GetAtt 
+        - EipNgwYNAG3Sample01C
+        - AllocationId
+      SubnetId: !Ref SubnetYNAG3Sample01PublicC
+      Tags:
+        - Key: Name
+          Value: ngw-YNAG3Sample01-c
+        - Key: Application
+          Value: YNAG3Sample01
+  EipNgwYNAG3Sample01C:
+    Type: 'AWS::EC2::EIP'
+    DeletionPolicy: Delete
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: eip-ngw-YNAG3Sample01-c
+        - Key: Application
+          Value: YNAG3Sample01
+  RtbYNAG3Sample01Public:
+    Type: 'AWS::EC2::RouteTable'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      Tags:
+        - Key: Name
+          Value: rtb-YNAG3Sample01-public
+  RtbYNAG3Sample01PublicRoute0:
+    Type: 'AWS::EC2::Route'
+    DependsOn: IgwYNAG3Sample01Attach
+    DeletionPolicy: Delete
+    Properties:
+      RouteTableId: !Ref RtbYNAG3Sample01Public
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IgwYNAG3Sample01
+  RtbYNAG3Sample01Private:
+    Type: 'AWS::EC2::RouteTable'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      Tags:
+        - Key: Name
+          Value: rtb-YNAG3Sample01-private
+  RtbYNAG3Sample01ProtectedA:
+    Type: 'AWS::EC2::RouteTable'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      Tags:
+        - Key: Name
+          Value: rtb-YNAG3Sample01-protected-a
+  RtbYNAG3Sample01ProtectedARoute0:
+    Type: 'AWS::EC2::Route'
+    DeletionPolicy: Delete
+    Properties:
+      RouteTableId: !Ref RtbYNAG3Sample01ProtectedA
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NgwYNAG3Sample01A
+  RtbYNAG3Sample01ProtectedC:
+    Type: 'AWS::EC2::RouteTable'
+    DeletionPolicy: Delete
+    Properties:
+      VpcId: !Ref VpcYNAG3Sample01
+      Tags:
+        - Key: Name
+          Value: rtb-YNAG3Sample01-protected-c
+  RtbYNAG3Sample01ProtectedCRoute0:
+    Type: 'AWS::EC2::Route'
+    DeletionPolicy: Delete
+    Properties:
+      RouteTableId: !Ref RtbYNAG3Sample01ProtectedC
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NgwYNAG3Sample01C
+  SubnetRouteTableAssociationSubnetYNAG3Sample01PublicA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref SubnetYNAG3Sample01PublicA
+      RouteTableId: !Ref RtbYNAG3Sample01Public
+  SubnetRouteTableAssociationSubnetYNAG3Sample01PublicC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref SubnetYNAG3Sample01PublicC
+      RouteTableId: !Ref RtbYNAG3Sample01Public
+  SubnetRouteTableAssociationSubnetYNAG3Sample01ProtectedA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref SubnetYNAG3Sample01ProtectedA
+      RouteTableId: !Ref RtbYNAG3Sample01ProtectedA
+  SubnetRouteTableAssociationSubnetYNAG3Sample01ProtectedC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref SubnetYNAG3Sample01ProtectedC
+      RouteTableId: !Ref RtbYNAG3Sample01ProtectedC
+  SubnetRouteTableAssociationSubnetYNAG3Sample01PrivateA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref SubnetYNAG3Sample01PrivateA
+      RouteTableId: !Ref RtbYNAG3Sample01Private
+  SubnetRouteTableAssociationSubnetYNAG3Sample01PrivateC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    DeletionPolicy: Delete
+    Properties:
+      SubnetId: !Ref SubnetYNAG3Sample01PrivateC
+      RouteTableId: !Ref RtbYNAG3Sample01Private
+  EndpointYNAG3Sample01S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - s3:*
+            Resource: '*'
+      RouteTableIds:
+        - !Ref RtbYNAG3Sample01ProtectedA
+        - !Ref RtbYNAG3Sample01ProtectedC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcId: !Ref VpcYNAG3Sample01

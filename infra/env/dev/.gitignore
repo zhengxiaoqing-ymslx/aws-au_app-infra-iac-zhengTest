@@ -1,0 +1,5 @@
+/main.tf
+/variables.tf
+/*taskdef_check.json
+/s3_bucket_policy.json
+/terraform.tfbackend

@@ -1,0 +1,59 @@
+log_format  header  '[$time_local] '
+                    'host: $remote_addr\t'
+                    'user: $remote_user\t'
+                    'request: $request\t'
+                    'status: $status\t'
+                    'size: $body_bytes_sent\t'
+                    'referer: $http_referer\t'
+                    'http_host: $http_host\t'
+                    'request_time: $request_time\t'
+                    'content_type: $sent_http_content_type\t'
+                    'accept_encoding: $http_accept_encoding\t'
+                    'accept_language: $http_accept_language\t'
+                    'user_agent: $http_user_agent\t';
+
+server {
+    listen       $NGINX_PORT;
+    #server_name 0.0.0.0;
+    server_name  localhost;
+    server_tokens off;
+    proxy_read_timeout 310s;
+    proxy_send_timeout 310s;
+    proxy_connect_timeout 310s;
+    keepalive_timeout 310s;
+    client_body_timeout 310s;
+
+    location / {
+        if ($request_method = 'OPTIONS') {
+            more_clear_headers Access-Control-Allow-Origin;
+            add_header Access-Control-Allow-Origin '$ALLOW_ORIGIN';
+            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE';
+            add_header Access-Control-Allow-Headers 'Origin, Authorization, Accept, Content-Type';
+            add_header Access-Control-Max-Age 3600;
+            add_header Content-Type 'text/plain charset=UTF-8';
+            add_header Content-Length 0;
+            return 204;
+        }
+        # index  index.html;
+        more_clear_headers Access-Control-Allow-Origin;
+        add_header Access-Control-Allow-Origin '$ALLOW_ORIGIN';
+        add_header Strict-Transport-Security '$STRICT_TRANSPORT_SECURITY' always;
+        # proxy_set_header    Host    $http_host;
+        proxy_set_header    X-Real-IP    $remote_addr;
+        proxy_set_header    X-Forwarded-Host       $http_host;
+        proxy_set_header    X-Forwarded-Server    $http_host;
+        proxy_set_header    X-Forwarded-For    $proxy_add_x_forwarded_for;
+        resolver 169.254.169.253;
+        proxy_intercept_errors on;
+        error_page 403 = /index.html;
+        error_page 404 = /index.html;
+        location = /index.html {
+            proxy_pass https://$SERVICE_S3_BUCKET/index.html;
+        }
+        proxy_pass https://$SERVICE_S3_BUCKET/;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+    }
+}

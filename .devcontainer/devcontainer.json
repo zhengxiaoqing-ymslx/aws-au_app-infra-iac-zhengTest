@@ -1,0 +1,6 @@
+{
+    "name": "DevContainer", // お好みの名前
+    "build": {
+        "dockerfile": "./Dockerfile" // 相対パス表記
+    }
+}

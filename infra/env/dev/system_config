@@ -1,0 +1,12 @@
+
+#!/bin/bash
+#           1234567890123456789 (limit:19 characters)
+system_name=
+#           123 (limit:3 characters)
+environment=
+#        1234567890123456789 (limit:19 characters)
+internet=
+#        1234567890123456789 (limit:19 characters)
+localnet=
+#
+region_name=ap-northeast-1
